@@ -20,6 +20,7 @@ let guessesHistory = [];
 let gameState = {};
 let playerName = '';
 let leaderboard = [];
+const db = typeof firebase !== 'undefined' ? firebase.firestore() : null;
 
 // Get today's date as YYYY-MM-DD
 function getTodayDate() {
@@ -165,6 +166,46 @@ function saveLeaderboard() {
     localStorage.setItem('millionleLeaderboard', JSON.stringify({ date: today, entries: leaderboard }));
 }
 
+async function fetchRemoteLeaderboard() {
+    if (!db) return;
+    const today = getTodayDate();
+    try {
+        const querySnapshot = await db.collection('leaderboards')
+            .where('date', '==', today)
+            .orderBy('guesses', 'asc')
+            .orderBy('name', 'asc')
+            .limit(10)
+            .get();
+
+        leaderboard = querySnapshot.docs.map(doc => doc.data());
+        updateLeaderboardUI();
+    } catch (error) {
+        console.error('Failed to load leaderboard:', error);
+    }
+}
+
+async function uploadScoreIfBetter(name, guesses) {
+    if (!db || !name) return;
+    const today = getTodayDate();
+    const normalizedId = `${today}_${name.trim().toLowerCase().replace(/\s+/g, '_')}`;
+    const scoreRef = db.collection('leaderboards').doc(normalizedId);
+
+    try {
+        const scoreDoc = await scoreRef.get();
+        if (!scoreDoc.exists || guesses < scoreDoc.data().guesses) {
+            await scoreRef.set({
+                date: today,
+                name: name.trim(),
+                guesses,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+        }
+        await fetchRemoteLeaderboard();
+    } catch (error) {
+        console.error('Failed to upload score:', error);
+    }
+}
+
 function showNameModal() {
     nameModal.classList.remove('hidden');
     nameInput.focus();
@@ -206,6 +247,7 @@ function addLeaderboardEntry(name, guesses) {
 initializeGame();
 updatePlayerNameDisplay();
 updateLeaderboardUI();
+fetchRemoteLeaderboard();
 
 if (!playerName) {
     showNameModal();
@@ -297,7 +339,7 @@ function makeGuess() {
         gameState.gameWon = true;
         saveGameState();
         if (playerName) {
-            addLeaderboardEntry(playerName, guessesHistory.length);
+            uploadScoreIfBetter(playerName, guessesHistory.length);
         }
         return;
     } else if (guess < secretNumber) {
