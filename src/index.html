@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Millionle</title>
+    <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+    <header>
+        <h1>MILLIONLE</h1>
+    </header>
+    <main>
+        <div class="game-container">
+            <div class="info-box">
+                <p>Guess the number between <strong>1</strong> and <strong>1,000,000</strong></p>
+            </div>
+            
+            <div class="guess-section">
+                <input type="number" id="guessInput" min="1" max="1000000" placeholder="Enter your guess..." autofocus>
+                <button id="submitBtn">Submit</button>
+            </div>
+            
+            <div id="feedback" class="feedback"></div>
+            
+            <div id="indicator" class="indicator"></div>
+            
+            <div id="guesses" class="guesses"></div>
+            
+            <div id="range-display" class="range-display"></div>
+        </div>
+    </main>
+    <footer>
+        <p id="footerText">You have 20 guesses remaining</p>
+    </footer>
+    <script src="scripts/main.js"></script>
+</body>
+</html>
