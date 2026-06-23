@@ -172,12 +172,12 @@ async function fetchRemoteLeaderboard() {
     try {
         const querySnapshot = await db.collection('leaderboards')
             .where('date', '==', today)
-            .orderBy('guesses', 'asc')
-            .limit(10)
+            .limit(100)
             .get();
 
         leaderboard = querySnapshot.docs.map(doc => doc.data());
         leaderboard.sort((a, b) => a.guesses - b.guesses || a.name.localeCompare(b.name));
+        leaderboard = leaderboard.slice(0, 10);
         updateLeaderboardUI();
     } catch (error) {
         console.error('Failed to load leaderboard:', error);
