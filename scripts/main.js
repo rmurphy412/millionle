@@ -6,6 +6,9 @@ const guessesDiv = document.getElementById('guesses');
 const footerText = document.getElementById('footerText');
 const indicator = document.getElementById('indicator');
 const rangeDisplay = document.getElementById('range-display');
+const nameModal = document.getElementById('nameModal');
+const nameInput = document.getElementById('nameInput');
+const nameSubmitBtn = document.getElementById('nameSubmitBtn');
 
 // Track bounds for range display
 let lowestTooHigh = 1000001;
@@ -15,6 +18,8 @@ let secretNumber;
 let guessesRemaining = 20;
 let guessesHistory = [];
 let gameState = {};
+let playerName = '';
+let leaderboard = [];
 
 // Get today's date as YYYY-MM-DD
 function getTodayDate() {
@@ -39,6 +44,19 @@ function generateDailyNumber(dateString) {
 function initializeGame() {
     const today = getTodayDate();
     const savedState = localStorage.getItem('millionleGameState');
+    const savedLeaderboard = localStorage.getItem('millionleLeaderboard');
+    const savedName = localStorage.getItem('millionlePlayerName');
+    
+    if (savedName) {
+        playerName = savedName;
+    }
+
+    if (savedLeaderboard) {
+        const allLeaderboard = JSON.parse(savedLeaderboard);
+        if (allLeaderboard.date === today) {
+            leaderboard = allLeaderboard.entries;
+        }
+    }
     
     if (savedState) {
         gameState = JSON.parse(savedState);
@@ -113,8 +131,87 @@ function restoreGameUI() {
         : `You have ${guessesRemaining} guesses remaining`;
 }
 
+function updatePlayerNameDisplay() {
+    const playerNameDisplay = document.getElementById('playerNameDisplay');
+    if (playerName) {
+        playerNameDisplay.textContent = `Player: ${playerName}`;
+    } else {
+        playerNameDisplay.textContent = '';
+    }
+}
+
+function updateLeaderboardUI() {
+    const leaderboardList = document.getElementById('leaderboardList');
+    leaderboardList.innerHTML = '';
+
+    if (leaderboard.length === 0) {
+        const empty = document.createElement('p');
+        empty.className = 'leaderboard-empty';
+        empty.textContent = 'No scores yet for today.';
+        leaderboardList.appendChild(empty);
+        return;
+    }
+
+    leaderboard.slice(0, 10).forEach(entry => {
+        const item = document.createElement('div');
+        item.className = 'leaderboard-item';
+        item.innerHTML = `<span class="name">${entry.name}</span><span>${entry.guesses} guess${entry.guesses === 1 ? '' : 'es'}</span>`;
+        leaderboardList.appendChild(item);
+    });
+}
+
+function saveLeaderboard() {
+    const today = getTodayDate();
+    localStorage.setItem('millionleLeaderboard', JSON.stringify({ date: today, entries: leaderboard }));
+}
+
+function showNameModal() {
+    nameModal.classList.remove('hidden');
+    nameInput.focus();
+}
+
+function hideNameModal() {
+    nameModal.classList.add('hidden');
+}
+
+function setPlayerName(name) {
+    const trimmed = name.trim();
+    if (!trimmed) {
+        nameInput.placeholder = 'Name is required';
+        nameInput.classList.add('invalid');
+        return false;
+    }
+
+    playerName = trimmed;
+    localStorage.setItem('millionlePlayerName', playerName);
+    updatePlayerNameDisplay();
+    hideNameModal();
+    return true;
+}
+
+function addLeaderboardEntry(name, guesses) {
+    const existingIndex = leaderboard.findIndex(entry => entry.name.toLowerCase() === name.toLowerCase());
+    if (existingIndex >= 0) {
+        leaderboard[existingIndex].guesses = Math.min(leaderboard[existingIndex].guesses, guesses);
+    } else {
+        leaderboard.push({ name, guesses });
+    }
+
+    leaderboard.sort((a, b) => a.guesses - b.guesses || a.name.localeCompare(b.name));
+    saveLeaderboard();
+    updateLeaderboardUI();
+}
+
 // Initialize game on page load
 initializeGame();
+updatePlayerNameDisplay();
+updateLeaderboardUI();
+
+if (!playerName) {
+    showNameModal();
+} else {
+    hideNameModal();
+}
 
 // Timer functionality
 function getTimeUntilMidnight() {
@@ -147,6 +244,20 @@ function updateTimer() {
 // Update timer immediately and then every second
 updateTimer();
 const timerInterval = setInterval(updateTimer, 1000);
+
+nameSubmitBtn.addEventListener('click', () => {
+    if (setPlayerName(nameInput.value)) {
+        nameInput.classList.remove('invalid');
+    }
+});
+
+nameInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        if (setPlayerName(nameInput.value)) {
+            nameInput.classList.remove('invalid');
+        }
+    }
+});
 
 submitBtn.addEventListener('click', () => {
     makeGuess();
@@ -185,6 +296,9 @@ function makeGuess() {
         addGuessToHistory(guess, resultClass, '✅');
         gameState.gameWon = true;
         saveGameState();
+        if (playerName) {
+            addLeaderboardEntry(playerName, guessesHistory.length);
+        }
         return;
     } else if (guess < secretNumber) {
         resultText = '📈 Too low! Guess higher.';

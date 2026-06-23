@@ -10,10 +10,18 @@
     <header>
         <h1>MILLIONLE</h1>
     </header>
+    <div id="nameModal" class="overlay">
+        <div class="modal">
+            <h2>Enter Name</h2>
+            <input id="nameInput" type="text" placeholder="Your name" maxlength="20">
+            <button id="nameSubmitBtn">Start Game</button>
+        </div>
+    </div>
     <main>
         <div class="game-container">
             <div class="info-box">
                 <p>Guess the number between <strong>1</strong> and <strong>1,000,000</strong></p>
+                <p id="playerNameDisplay" class="player-name"></p>
             </div>
             
             <div class="guess-section">
@@ -28,6 +36,12 @@
             <div id="guesses" class="guesses"></div>
             
             <div id="range-display" class="range-display"></div>
+            <div id="leaderboard" class="leaderboard">
+                <h2>Leaderboard</h2>
+                <div id="leaderboardList" class="leaderboard-list">
+                    <p class="leaderboard-empty">No scores yet for today.</p>
+                </div>
+            </div>
         </div>
     </main>
     <footer>
