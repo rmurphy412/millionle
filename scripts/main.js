@@ -123,11 +123,12 @@ function getTimeUntilMidnight() {
     tomorrow.setDate(tomorrow.getDate() + 1);
     tomorrow.setHours(0, 0, 0, 0);
     
-    const timeLeft = tomorrow - now;
+    const timeLeft = tomorrow.getTime() - now.getTime();
     return timeLeft;
 }
 
 function formatTime(milliseconds) {
+    if (!milliseconds || milliseconds < 0) return '00:00:00';
     const totalSeconds = Math.floor(milliseconds / 1000);
     const hours = Math.floor(totalSeconds / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
@@ -138,13 +139,14 @@ function formatTime(milliseconds) {
 
 function updateTimer() {
     const timerText = document.getElementById('timerText');
+    if (!timerText) return;
     const timeLeft = getTimeUntilMidnight();
     timerText.textContent = `Next number in: ${formatTime(timeLeft)}`;
 }
 
 // Update timer immediately and then every second
 updateTimer();
-setInterval(updateTimer, 1000);
+const timerInterval = setInterval(updateTimer, 1000);
 
 submitBtn.addEventListener('click', () => {
     makeGuess();
