@@ -188,3 +188,13 @@ footer {
     border-top: 1px solid #3a3a3c;
     font-size: 14px;
 }
+
+footer p {
+    margin: 5px 0;
+}
+
+.timer {
+    font-size: 13px;
+    color: #8a8a8a;
+    font-weight: 500;
+}
