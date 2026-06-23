@@ -1,7 +1,7 @@
 {
-  "name": "my-website",
+  "name": "millionle",
   "version": "1.0.0",
-  "description": "A simple local website project.",
+  "description": "Guess the number between 1 and 1 million",
   "main": "src/index.html",
   "scripts": {
     "start": "live-server src",
