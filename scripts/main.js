@@ -22,10 +22,13 @@ let playerName = '';
 let leaderboard = [];
 const db = typeof firebase !== 'undefined' ? firebase.firestore() : null;
 
-// Get today's date as YYYY-MM-DD
+// Get today's local date as YYYY-MM-DD
 function getTodayDate() {
     const today = new Date();
-    return today.toISOString().split('T')[0];
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
 }
 
 // Generate deterministic random number based on date
@@ -56,6 +59,9 @@ function initializeGame() {
         const allLeaderboard = JSON.parse(savedLeaderboard);
         if (allLeaderboard.date === today) {
             leaderboard = allLeaderboard.entries;
+        } else {
+            leaderboard = [];
+            localStorage.removeItem('millionleLeaderboard');
         }
     }
     
@@ -105,7 +111,15 @@ function startNewGame(dateString) {
         gameWon: false
     };
     
+    submitBtn.disabled = false;
+    guessInput.disabled = false;
+    guessInput.value = '';
+    feedback.textContent = '';
+    feedback.className = 'feedback';
+    indicator.className = 'indicator hidden';
+
     saveGameState();
+    restoreGameUI();
 }
 
 // Save game state to localStorage
