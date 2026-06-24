@@ -100,11 +100,7 @@ function initializeGame() {
 
 // Start a new daily game
 function startNewGame(dateString) {
-    if (dateString === '2026-06-25') {
-        secretNumber = 765321;
-    } else {
-        secretNumber = generateDailyNumber(dateString);
-    }
+    secretNumber = generateDailyNumber(dateString);
     guessesRemaining = 20;
     guessesHistory = [];
     lowestTooHigh = 1000001;
