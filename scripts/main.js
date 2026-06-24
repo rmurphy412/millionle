@@ -33,14 +33,19 @@ function getTodayDate() {
 
 // Generate deterministic random number based on date
 function generateDailyNumber(dateString) {
-    // Use date string to seed a simple pseudo-random generator
-    let hash = 0;
+    // Use a stronger deterministic hash for the date so sequential days don't map to nearby numbers.
+    let hash = 2166136261;
     for (let i = 0; i < dateString.length; i++) {
-        const char = dateString.charCodeAt(i);
-        hash = ((hash << 5) - hash) + char;
-        hash = hash & hash; // Convert to 32-bit integer
+        hash ^= dateString.charCodeAt(i);
+        hash = Math.imul(hash, 16777619);
     }
-    // Convert hash to number between 1 and 1,000,000
+    // Final mixing to spread bits more evenly
+    hash ^= hash >>> 16;
+    hash = Math.imul(hash, 2246822507);
+    hash ^= hash >>> 13;
+    hash = Math.imul(hash, 3266489909);
+    hash ^= hash >>> 16;
+
     return (Math.abs(hash) % 1000000) + 1;
 }
 
@@ -95,8 +100,8 @@ function initializeGame() {
 
 // Start a new daily game
 function startNewGame(dateString) {
-    if (dateString === '2026-06-24') {
-        secretNumber = 320567;
+    if (dateString === '2026-06-25') {
+        secretNumber = 765321;
     } else {
         secretNumber = generateDailyNumber(dateString);
     }
